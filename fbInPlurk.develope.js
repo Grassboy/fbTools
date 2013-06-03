@@ -1830,6 +1830,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
 			} else {
 				AJS.removeClass($dp.hover_div, "link_extend");
 				if (SiteState.canEdit()) {
+					TinyEmoAdder.remove();
 					if (!AJS.hasClass($dp.hover_div, "plurk_box")) {
 						AJS.removeClass($dp.hover_div, "display")
 					}
@@ -1885,6 +1886,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
 				return true
 			}
 			$dp.hoverFlag = null;
+			TinyEmoAdder.remove();
 			Plurks.noExapndOnAction(100);
 			if (InfoOverlay.cloned) {
 				InfoOverlay.hideInfoOverlay()
@@ -1899,7 +1901,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
 					$dp.removing = true
 				} catch (z) {}
 				var B = (730 - C) / 4;
-				TimeLine.slideBack(4, - B, "left", function () {
+				TimeLine.slideBack(4, -B, "left", function () {
 					if (!$dp.div2) {
 						return
 					}
@@ -2007,7 +2009,6 @@ if(window.FRIENDS != null && SiteState.canEdit()){
 			
 			}
 			//}}
-
 			var A = $dp.info_box;
 			var q = AJS.$bytc("span", "pixel", A, true);
 			if (q) {
@@ -2047,7 +2048,6 @@ if(window.FRIENDS != null && SiteState.canEdit()){
 				if (h.latitude && h.longitude) {
 					AJS.showElement(x);
 					var a = AJS.$bytc("a", "plurk_loc_btn", x, true);
-					AJS.setHTML(a, _("Show location"))
 					AJS.AEV(a, "click", function (I) {
 						top.GB_showCenter(_("Plurk location"), "/PlurksLocation/show?plurk_id=" + h.plurk_id, 400, 650);
 						AJS.stopPropagation(I);
@@ -2241,6 +2241,9 @@ if(window.FRIENDS != null && SiteState.canEdit()){
 				}, h.response_count)));
 				var t = AJS.$p(Plurks.expand, m);
 				jQuery(m).click(function (z) {
+					if (jQuery(z.target).hasClass("emoticon_my") && EmoAddHelper.shouldIgnoreCustomEmoticonClickOnTimeline) {
+						return
+					}
 					if (jQuery(z.target).parent("a.pictureservices").length > 0) {
 						return
 					}
@@ -2397,6 +2400,8 @@ if(window.FRIENDS != null && SiteState.canEdit()){
 			}
 			Poll.updateCounters();
 		};
+		//Remove http://go.plurk.com redirection
+		eval("Media._hideLink = " + Media._hideLink.toString().replace("window.open(b","window.open(c.href"));
 		document.body.removeChild(AJS.$("form_holder")); //要重載form_holder
 		Plurks.init();
 		(function(){
