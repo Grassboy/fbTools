@@ -949,7 +949,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
 		};
 		window.fbAsyncInit = function () {
 			FB.init({
-				appId: '142534085764122',
+				appId: '142534085764122', 
 				status: true,
 				cookie: true,
 				xfbml: true
