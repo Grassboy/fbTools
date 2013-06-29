@@ -2138,10 +2138,12 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       if(fb_mode){
         d.name_color = "3459B2";
         d.date_of_birth = null;
-      } 
+      }
       ////}} end of fb_mode hack
-      var f = "<div class='plurk cboxAnchor' data-pid='{{plurk_id}}' data-rid='{{rid}}' data-uid='{{user_id}}' data-type='{{type}}'><table><tbody><tr><td class='td_img'><div class='p_img'><img src='{{img_src}}'></div></td><td><div id='plurk_cnt_{{plurk_id}}' class='plurk_cnt'><table><tbody><tr class='tr_cnt'><td class='td_qual'></td><td class='td_cnt'></td></tr><tr class='tr_info' style='display: none;'><td class='td_info' colspan='2'></td></tr></tbody></table></div></td></tr></tbody></table></div>";
-      f = Handlebars.compile(f);
+      if (!Plurks.divTmpl) {
+        Plurks.divTmpl = Handlebars.compile(Plurks.divTmplStr)
+      }
+      var f = Plurks.divTmpl;
       var u = (!l) ? "p" + h.id : "m" + h.id;
       if (l) {
         if (jQuery("#" + u).length) {
@@ -2272,6 +2274,9 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         AJS.addClass(m, "muted")
       }
       Plurks.applyNameColor(m, h);
+      if (window.annoplurk) {
+        annoplurk.attach(m)
+      }
       //{{ //startof fb_mode hack: d為一開始var d = SiteState.getPlurkUser(...);中的d 
       if(fb_mode){
         d.date_of_birth = tmp_dob;
@@ -2850,3 +2855,4 @@ function getFBfipListLimit(){
     }
   );
 }
+
