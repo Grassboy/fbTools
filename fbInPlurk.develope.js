@@ -1700,82 +1700,58 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       }
     };
     ////}} Whole ListAll (End)
-    Plurks._renderIcons = function (g, e, f) {
-      var e = !! e;
-      var c = g.obj;
-      var a = g.div;
-      if (!f) {
-        f = SiteState.getPlurkUser(c)
+    Plurks._renderIcons = function (e, d) {
+      var c = e.obj;
+      var a = e.div;
+      var f = jQuery(a);
+      if (!d) {
+        d = SiteState.getPlurkUser(c)
       }
-      var m = AJS.$bytc("div", "plurk_icon", a);
-      for (var d = 0; d < m.length; d++) {
-        AJS.removeElement(m[d])
+      if (!Plurks.$icon_pri) {
+        Plurks.$icon_pri = jQuery("<div class='plurk_icon private'>").append("<img src='//statics.plurk.com/c550f52f61da13964d5415c07b7506ca.png' height='16' width='16'>")
       }
-      var j = 15;
+      if (!Plurks.$icon_fav) {
+        Plurks.$icon_fav = jQuery("<div class='plurk_icon favorite_icon'>").append("<img src='//statics.plurk.com/ffdca9715cfcd8ea7adc140c1f9d37df.png' height='16' width='16'>")
+      }
+      if (!Plurks.$icon_replurk) {
+        Plurks.$icon_replurk = jQuery("<div class='plurk_icon private'>").append("<img src='//statics.plurk.com/2da9c174ff4bce649887dba83a97222e.png' height='16' width='16'>")
+      }
+      if (!Plurks.$icon_birth) {
+        Plurks.$icon_birth = jQuery("<div class='plurk_icon bday'>").append("<img src='//statics.plurk.com/095108068bb9c366ab82a362d84610aa.png' height='16' width='16'>")
+      }
+      //{{ startof fb_mode: 這段直接加上去即可
+      if (!Plurks.$fip_icon) {
+        Plurks.$fip_icon = jQuery("<div class='plurk_icon private'>").append("<img src='http://www.grassboy.tw/fbTools/fb_icon.png' height='16' width='16'>")
+      }
+      //}} endof fb_mode hack
+      f.find("div.plurk_icon").remove();
+      var g = 15;
       if (c.limited_to) {
-        AJS.appendToTop(a, AJS.DIV({
-          c: "plurk_icon private",
-          s: "left:" + j + "px"
-        }, PNGIMG({
-          src: "http://statics.plurk.com/c550f52f61da13964d5415c07b7506ca.png",
-          width: 16,
-          height: 16
-        })));
-        j += 17
+        Plurks.$icon_pri.clone().css("left", g).appendTo(f);
+        g += 17
       }
       if (c.favorite) {
-        AJS.appendToTop(a, AJS.DIV({
-          c: "plurk_icon favorite_icon",
-          s: "left:" + j + "px"
-        }, PNGIMG({
-          src: "http://statics.plurk.com/ffdca9715cfcd8ea7adc140c1f9d37df.png",
-          width: 16,
-          height: 16
-        })));
-        j += 17
+        Plurks.$icon_fav.clone().css("left", g).appendTo(f);
+        g += 17
       }
-      //startof fb_mode hack:t為前一行if block的t.favorite w為前兩個if block的w r為前一個if block的 var r; x為前一個if block的appendToTop(x
+      //{{ startof fb_mode hack:c為前一行if block的c.favorite f為前兩個if block的f g為前兩個if block的g 
       if (c.fb_uid && c.id.toString().indexOf("_")==-1) {
-        AJS.appendToTop(a, AJS.DIV({
-          c: "plurk_icon private",
-          s: "left:" + j + "px"
-        }, PNGIMG({
-          src: "http://www.grassboy.tw/fbTools/fb_icon.png",
-          width: 16,
-          height: 16
-        })));
-        j += 17
+        Plurks.$fip_icon.clone().css("left", g).appendTo(f);
+        g += 17
       }
-      //endof fb_mode hack
+      //}} endof fb_mode hack
       if (c.replurked) {
-        AJS.appendToTop(a, AJS.DIV({
-          c: "plurk_icon replurk",
-          s: "left:" + j + "px"
-        }, PNGIMG({
-          src: "http://statics.plurk.com/2da9c174ff4bce649887dba83a97222e.png",
-          width: 16,
-          height: 16
-        })));
-        j += 17
+        Plurks.$icon_replurk.clone().css("left", g).appendTo(f)
       }
-      if (!e) {
-        var m = f.date_of_birth;
-        if (m) {
-          if (AJS.isString(m)) {
-            m = new Date(m)
-          }
-          var j = new Date(m.getTime() + m.getTimezoneOffset() * 60000);
-          var b = new Date();
-          var h = "plurk_icon bday";
-          if (j.getMonth() == b.getMonth() && j.getDate() == b.getDate()) {
-            AJS.appendToTop(a, AJS.DIV({
-              c: h
-            }, PNGIMG({
-              src: "http://statics.plurk.com/095108068bb9c366ab82a362d84610aa.png",
-              width: 16,
-              height: 16
-            })))
-          }
+      var j = d.date_of_birth;
+      if (j) {
+        if (typeof j == "string") {
+          j = new Date(j)
+        }
+        var h = new Date(j.getTime() + j.getTimezoneOffset() * 60000);
+        var b = new Date();
+        if (h.getMonth() == b.getMonth() && h.getDate() == b.getDate()) {
+          Plurks.$icon_birth.clone().appendTo(f)
         }
       }
     };
@@ -1786,37 +1762,38 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       var a = c.obj;
       var fb_mode = c.obj.fb_uid?true:false;
 
-      //{ { fb_in_plurk_hack: 只是單純把code移到else block
+      //{ { fb_in_plurk_hack: 無腦加上這段即可XDD
       if(fb_mode){
-      } else {
-        a.favorite = !a.favorite;
-        var b = AJS.loadJSON("/Favorites/set");
-        b.sendReq({
-          plurk_id: a.plurk_id,
-          favorite: a.favorite,
-          token: SiteState.getToken()
-        });
-        if (a.favorite) {
-          a.favorers.push(SiteState.getSessionUser().id);
-          a.favorite_count = a.favorite_count + 1
-        } else {
-          a.favorers.splice(AJS.getIndex(SiteState.getSessionUser().id, a.favorers), 1);
-          a.favorite_count = a.favorite_count - 1
-        }
-        Plurks._renderFav(c);
-        Plurks._renderIcons(c, false);
-        Plurks._renderReplurkDetails(c);
-        Plurks._renderFavoriteCount(a);
-        TimeLineCache.purge("favorite");
-        Plurks.noExapndOnAction();
-        if (a.favorite) {
-          Signals.sendSignal("plurk_favorited", a)
-        } else {
-          Signals.sendSignal("plurk_unfavorited", a)
-        }
-        return false
+        return
       }
       ////}}
+      a.favorite = !a.favorite;
+      var b = AJS.loadJSON("/Favorites/set");
+      b.sendReq({
+        plurk_id: a.plurk_id,
+        favorite: a.favorite,
+        token: SiteState.getToken()
+      });
+      if (a.favorite) {
+        a.favorers.push(SiteState.getSessionUser().id);
+        a.favorite_count = a.favorite_count + 1
+      } else {
+        a.favorers.splice(AJS.getIndex(SiteState.getSessionUser().id, a.favorers), 1);
+        a.favorite_count = a.favorite_count - 1
+      }
+      Plurks._renderFav(c);
+      Plurks._renderIcons(c, false);
+      Plurks._renderIcons(c, false);
+      Plurks._renderReplurkDetails(c);
+      Plurks._renderFavoriteCount(a);
+      TimeLineCache.purge("favorite");
+      Plurks.noExapndOnAction();
+      if (a.favorite) {
+        Signals.sendSignal("plurk_favorited", a)
+      } else {
+        Signals.sendSignal("plurk_unfavorited", a)
+      }
+      return false
     };
     Plurks._plurkMouseOver = function (e) {
       var b = jQuery(e);
@@ -2123,42 +2100,43 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         }
       }, 0)
     };
-    Plurks.renderPlurk = function (h, l) {
-      //{{ fb_in_plurk_hack: h 為第一個參數 h
-      var fb_mode = (h.fb_uid ? true : false);
+    Plurks.renderPlurk = function (j, m) {
+      //{{ fb_in_plurk_hack: j 為第一個參數 j
+      var fb_mode = (j.fb_uid ? true : false);
       ////}}
-      var x = Plurks;
-      var d = SiteState.getPlurkUser(h);
-      if (!d) {
+      var y = Plurks;
+      var m = m || false;
+      var c = SiteState.getPlurkUser(j);
+      if (!c) {
         return null
       }
-      //{{ //startof fb_mode hack: d為前面var d = SiteState.getPlurkUser(h);中的d
-      var tmp_dob = d.date_of_birth;
-      var tmp_nc = d.name_color;
+      //{{ //startof fb_mode hack: c為前面var c = SiteState.getPlurkUser(j);中的c
+      var tmp_dob = c.date_of_birth;
+      var tmp_nc = c.name_color;
       if(fb_mode){
-        d.name_color = "3459B2";
-        d.date_of_birth = null;
+        c.name_color = "3459B2";
+        c.date_of_birth = null;
       }
       ////}} end of fb_mode hack
       if (!Plurks.divTmpl) {
         Plurks.divTmpl = Handlebars.compile(Plurks.divTmplStr)
       }
-      var f = Plurks.divTmpl;
-      var u = (!l) ? "p" + h.id : "m" + h.id;
-      if (l) {
+      var g = Plurks.divTmpl;
+      var u = (!m) ? "p" + j.id : "m" + j.id;
+      if (m) {
         if (jQuery("#" + u).length) {
           return null
         }
       }
-      var s = h.content.replace("<script", "");
-      var b = null;
-      var o = d;
-      if (h.replurker_id) {
-        b = SiteState.getUserById(h.replurker_id)
+      var t = j.content.replace("<script", "");
+      var a = null;
+      var p = c;
+      if (j.replurker_id) {
+        a = SiteState.getUserById(j.replurker_id)
       }
-      var w = Qualifiers.format(d, h.qualifier, s, false, h.lang, h.id, (b != null));
+      var w = Qualifiers.format(c, j.qualifier, t, false, j.lang, j.id, (a != null));
       var v = w[0];
-      //startof fb_mode hack: w為前一行的w[] h為前兩行h.lang的h; 
+      //startof fb_mode hack: w為前一行的w[] j為前兩行j.lang的j; 
       var fillUAName = function (id) {
         return function (rows) {
           if (rows.length > 0) {
@@ -2175,115 +2153,91 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       };
       if (fb_mode) {
         var obj_a = w[0].getElementsByTagName("a")[0]; 
-        obj_a.id = "uA_" + h.id;
-        obj_a.href = "http://www.facebook.com/profile.php?id=" + h.fb_uid;
-        obj_a.innerHTML = FB.getUser(h.fb_uid, fillUAName(h.id)).name;
+        obj_a.id = "uA_" + j.id;
+        obj_a.href = "http://www.facebook.com/profile.php?id=" + j.fb_uid;
+        obj_a.innerHTML = FB.getUser(j.fb_uid, fillUAName(j.id)).name;
         obj_a.target = "_blank";
       }
       // endof fb_mode hack
-      var p = w[1];
-      if (b) {
-        o = b;
-        var r = SiteState.getSessionUser();
-        var y = (r && r.default_lang) || "en";
-        var e = Qualifiers._(b.gender, y, "replurks");
-        p = AJS.DIV({
-          c: "text_holder"
-        }, v, p);
-        v = AJS.SPAN(AJS.A({
-          href: "/" + b.nick_name,
-          c: "name"
-        }, b.display_name || b.nick_name), AJS.SPAN({
-          c: "qualifier q_replurks"
-        }, e))
+      var q = w[1];
+      if (a) {
+        p = a;
+        var s = SiteState.getSessionUser();
+        var z = a.display_name || a.nick_name;
+        var A = (s && s.default_lang) || "en";
+        var f = Qualifiers._(a.gender, A, "replurks");
+        var d = "<span><a class='name' href='/" + a.nick_name + "'>" + z + "</a><span class='qualifier q_replurks'>" + f + "</span></span>";
+        q = jQuery("<div class='text_holder'>").append(v).append(q).get(0);
+        v = jQuery("<span>").append(d).get(0)
       }
-      var c;
-      //{{ //startof fb_mode hack: l為此function的第二個參數l, c為前一行的var c, h為前面用到 h.lang 中的 h,  s為前面 var o = d; 中的 o
-      if (!l) {
-        c = (fb_mode? FB.getUser(h.fb_uid, fillUImgSrc(h.id)).pic_square : Users.getUserImgSrc(o));
+      var b;
+      //{{ //startof fb_mode hack: m為此function的第二個參數m, b為前一行的var b, j為前面用到 j.lang 中的 j,  s為前面 var p = a; 中的 p
+      if (!m) {
+        b = (fb_mode? FB.getUser(j.fb_uid, fillUImgSrc(j.id)).pic_square : Users.getUserImgSrc(p));
       }
       ////}}
-      var q = {
-        plurk_id: h.plurk_id,
-        rid: (h.id != h.plurk_id) ? h.id : "",
-        user_id: h.user_id,
+      var x = "";
+      if (c.nick_name == "plurkbuddy" && SiteState.canEdit()) {
+        x += "glow"
+      }
+      if (j.is_unread == 2) {
+        x += " muted"
+      }
+      if (SiteState.canEdit() && (Poll.current_data.unread_plurks[j.id])) {
+        x += " new"
+      }
+      if (m && (getPD($dp.current_div).obj.owner_id == j.user_id)) {
+        x += " highlight_owner"
+      }
+      var r = {
+        plurk_id: j.plurk_id,
+        rid: (j.id != j.plurk_id) ? j.id : "",
+        user_id: j.user_id,
         span_qual: v.outerHTML,
-        img_src: c,
-        type: (l) ? "response" : "plurk"
+        div_cnt: q.outerHTML,
+        img_src: b,
+        div_cls: x,
+        response_count: j.response_count,
+        mini: m,
+        type: (m) ? "response" : "plurk"
       };
-      var g = jQuery(f(q));
-      g.find(".td_qual").append(v);
-      g.find(".td_cnt").append(p);
-      if (l) {
-        g.find(".td_img").empty()
+      var h = jQuery(g(r));
+      if (m) {
+        h.find(".td_img").empty()
       }
-      var m = g.get(0);
-      var a = g.find("tr").get(0);
-      m.id = u;
-      var j = $plurks[u] = {
-        obj: h,
-        div: m,
-        image: g.find(".p_img").get(0),
-        div_cnt: p,
-        td_cnt: g.find(".td_cnt").get(0),
-        cnt: g.find(".plurk_cnt").get(0),
-        tr_cnt: g.find(".tr_cnt").removeAttr("class").get(0),
-        tr_info: g.find(".tr_info").get(0),
-        td_info: g.find(".td_info").get(0),
-        tr: a
+      var o = h.get(0);
+      o.id = u;
+      var l = $plurks[u] = {
+        obj: j,
+        div: o,
+        image: h.find(".p_img").get(0),
+        div_cnt: h.find(".text_holder").get(0),
+        td_cnt: h.find(".td_cnt").get(0),
+        cnt: h.find(".plurk_cnt").get(0),
+        tr_cnt: h.find(".tr_cnt").removeAttr("class").get(0),
+        tr_info: h.find(".tr_info").get(0),
+        td_info: h.find(".td_info").get(0),
+        tr: h.find("tr").get(0)
       };
-      Plurks._renderIcons(j, l, o);
-      if (!l) {
-        AJS.AEV(m, "mouseover", AJS.$p(x._plurkMouseOver, m));
-        AJS.AEV(m, "mouseout", AJS.$p(x._plurkMouseOut, m));
-        AJS.ACN(a, getPD(m).td_resp_count = AJS.TD({
-          c: "td_response_count"
-        }, getPD(m).response_count = AJS.SPAN({
-          c: "response_count"
-        }, h.response_count)));
-        var t = AJS.$p(Plurks.expand, m);
-        jQuery(m).click(function (z) {
-          if (jQuery(z.target).hasClass("emoticon_my") && EmoAddHelper.shouldIgnoreCustomEmoticonClickOnTimeline) {
-            return
-          }
-          if (jQuery(z.target).parent("a.pictureservices").length > 0) {
-            return
-          }
-          t()
-        });
-        if (SiteState.canEdit()) {
-          if ((Poll.current_data.unread_plurks[h.id])) {
-            AJS.addClass(m, "new")
-          }
-        }
-        if (h.response_count == 0) {
-          AJS.hideElement(getPD(m).response_count)
+      if (!m) {
+        Plurks._renderIcons(l, p);
+        var e = h.find(".td_response_count");
+        getPD(o).td_resp_count = e.get(0);
+        if (j.response_count == 0) {
+          e.find(".response_count").hide()
         }
       }
-      if (l) {
-        AJS.onEvent(m, "mouseover", AJS.$p(Responses.responseMouseOver, m));
-        AJS.onEvent(m, "mouseout", AJS.$p(Responses.responseMouseOut, m));
-        if (getPD($dp.current_div).obj.owner_id == h.user_id) {
-          AJS.addClass(m, "highlight_owner")
-        }
-      }
-      if (d.nick_name == "plurkbuddy" && SiteState.canEdit()) {
-        AJS.addClass(m, "glow")
-      }
-      if (h.is_unread == 2) {
-        AJS.addClass(m, "muted")
-      }
-      Plurks.applyNameColor(m, h);
+      Plurks.applyNameColor(o, j);
       if (window.annoplurk) {
-        annoplurk.attach(m)
+        annoplurk.attach(o)
       }
-      //{{ //startof fb_mode hack: d為一開始var d = SiteState.getPlurkUser(...);中的d 
+      //{{ //startof fb_mode hack: d為一開始var c = SiteState.getPlurkUser(...);中的c 
       if(fb_mode){
-        d.date_of_birth = tmp_dob;
-        d.name_color = tmp_nc;
+        c.date_of_birth = tmp_dob;
+        c.name_color = tmp_nc;
       }
       ////}} end of fb_mode hack
-      return m
+      return o
     };
     TimeLine.getFacebookNotifications = function(){
       var query = FB.Data.query('SELECT notification_id, title_html, title_text, app_id, href FROM notification WHERE recipient_id={0} AND is_unread = 1', FB.getAuthResponse().userID);
