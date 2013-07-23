@@ -1847,7 +1847,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       } else {
         //no-op under fbInPlurk mode
       }
-      TimeShow.on_plurk = e;
+      TimeShow.displayTime(e);
       Plurks.fixBottomPlurk(e);
       return false
     };
@@ -2193,8 +2193,8 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         plurk_id: j.plurk_id,
         rid: (j.id != j.plurk_id) ? j.id : "",
         user_id: j.user_id,
-        span_qual: v.outerHTML,
-        div_cnt: q.outerHTML,
+        span_qual: outerHTML(v),
+        div_cnt: outerHTML(q),
         img_src: b,
         div_cls: x,
         response_count: j.response_count,
@@ -2223,11 +2223,15 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         Plurks._renderIcons(l, p);
         var e = h.find(".td_response_count");
         getPD(o).td_resp_count = e.get(0);
+        getPD(o).response_count = e.find(".response_count").get(0);
         if (j.response_count == 0) {
           e.find(".response_count").hide()
         }
       }
       Plurks.applyNameColor(o, j);
+      if (window.Media) {
+        Media.attach(o)
+      }
       if (window.annoplurk) {
         annoplurk.attach(o)
       }
