@@ -2403,6 +2403,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         }
       });
       AJS.ACN(icons_holder, fip_sync_icon);
+
       jQuery("#form_holder").on("mouseover mouseout", "div.plurk", function (c) {
         switch (c.type) {
         case "mouseover":
