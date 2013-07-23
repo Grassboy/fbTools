@@ -2403,6 +2403,23 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         }
       });
       AJS.ACN(icons_holder, fip_sync_icon);
+      jQuery("#form_holder").on("mouseover mouseout", "div.plurk", function (c) {
+        switch (c.type) {
+        case "mouseover":
+          if (jQuery(c.target).hasClass("emoticon_my")) {
+            return true
+          }
+          Responses.responseMouseOver(this);
+          return false;
+        case "mouseout":
+          if (jQuery(c.target).hasClass("emoticon_my")) {
+            return true
+          }
+          Responses.responseMouseOut(this);
+          return false
+        }
+        return true
+      })
     })();
     getFBfipListLimit();
     function status2plurk(fbstatus) {
