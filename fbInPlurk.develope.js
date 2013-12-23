@@ -2141,6 +2141,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         }
       }
       var t = j.content.replace("<script", "");
+      t = image_url_proto_relative(t);
       var a = null;
       var p = c;
       if (j.replurker_id) {
