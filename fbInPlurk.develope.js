@@ -36,7 +36,7 @@
         c.showLoadingBlock()
       }
       var f = function(uid){
-        return function (h) {
+        return function (g) {
           var key = "u"+uid;
           var fetched = false;
           var hh;
@@ -44,7 +44,7 @@
             if(--TimeLine.remainCount <= 0){
               var minBegin = null;
               var maxEnd = null;
-              h = [];
+              g = [];
               for(key in TimeLine.receiveBuffer){
                 userPlurks = TimeLine.receiveBuffer[key];
                 if(userPlurks.length == 0) continue;
@@ -52,27 +52,27 @@
                   minBegin = getTimeAndFixPlurk(AJS.getFirst(userPlurks));
                 else if(!config.addToTop && (!maxEnd || getTimeAndFixPlurk(AJS.getLast(userPlurks)) > maxEnd))
                   maxEnd = getTimeAndFixPlurk(AJS.getLast(userPlurks));
-                h = h.concat(userPlurks);
+                g = g.concat(userPlurks);
               }
               delete TimeLine.receiveBuffer;
-              h.sort(c._sortPlurks);
-              for(var i = 0; i < h.length-1; i++){
-                if(h[i].id == h[i+1].id){
-                  h.splice(i--, 1);
+              g.sort(c._sortPlurks);
+              for(var i = 0; i < g.length-1; i++){
+                if(g[i].id == g[i+1].id){
+                  g.splice(i--, 1);
                 }
               }
-              if(h.length != 0){
+              if(g.length != 0){
                 if(config.addToTop){
-                  for(var i = 0 ; i < h.length; i++){
-                    if(getTimeAndFixPlurk(h[i]) <= minBegin){
-                      h.splice(0, i);
+                  for(var i = 0 ; i < g.length; i++){
+                    if(getTimeAndFixPlurk(g[i]) <= minBegin){
+                      g.splice(0, i);
                       break;
                     };
                   }
                 } else {
-                  for(var i = 0 ; i < h.length; i++){
-                    if(getTimeAndFixPlurk(h[i]) < maxEnd){
-                      h.splice(i, h.length);
+                  for(var i = 0 ; i < g.length; i++){
+                    if(getTimeAndFixPlurk(g[i]) < maxEnd){
+                      g.splice(i, g.length);
                       break;
                     };
                   }
@@ -84,8 +84,8 @@
               return false;
             }
           };
-          if (h.error || !TimeLine.receiveBuffer) {
-            if(h.error == "NoReadPermissionError") {
+          if (g.error || !TimeLine.receiveBuffer) {
+            if(g.error == "NoReadPermissionError") {
               alert(["河道任意門 通知：\n",
                   "\t很抱歉，由於 ",SiteState.getUserById(uid).nick_name," 的河道是私密河道\n",
                   "\t因此河道無法顯示他的噗…"].join(''));
@@ -98,22 +98,22 @@
             }
             if(!TimeLine.receiveBuffer) TimeLine.receiveBuffer = {};
             TimeLine.receiveBuffer[key] = [];
-            if(tryFetchH() && h.length != 0){
+            if(tryFetchH() && g.length != 0){
               if (c.plurks.length > 0) {
-                c.removeLoadingBlock(h);
+                c.removeLoadingBlock(g);
               }
-              return c._plurksFetched(h);
+              return c._plurksFetched(g);
             }
             return;
           }
-          if (!(h.constructor == Array) && h.plurks) {
-            h = h.plurks
+          if (!(g.constructor == Array) && g.plurks) {
+            g = g.plurks
           }
           if(!fetched){
             if(TimeLine.receiveBuffer[key] && TimeLine.receiveBuffer[key].length > 0) {
-              hh = TimeLine.receiveBuffer[key] = TimeLine.receiveBuffer[key].concat(h); //把之前取得的buffer接上去
+              hh = TimeLine.receiveBuffer[key] = TimeLine.receiveBuffer[key].concat(g); //把之前取得的buffer接上去
             } else {
-              hh = TimeLine.receiveBuffer[key] = h;
+              hh = TimeLine.receiveBuffer[key] = g;
             }
             if(config.addToTop){
               if(AJS.getLast(hh) && AJS.getLast(hh).id > TimeLine.plurks[0].id){ //表示目前取到的plurks沒有和河道接上
@@ -135,7 +135,7 @@
                   TimeLine.notAtBegin--;
                   TimeLine.atBeginUid[key] = true;
                   if(TimeLine.notAtBegin == 0){
-                    c.removeLoadingBlock(h);
+                    c.removeLoadingBlock(g);
                     TimeLine.getting_plurks = false;
                     e();
                   }
@@ -149,30 +149,14 @@
             if(tryFetchH() == false) return;
           }
           if (c.plurks.length > 0) {
-            c.removeLoadingBlock(h);
+            c.removeLoadingBlock(g);
           }
 
           //{{ start fbinplurk hack 這中間有一段 banana 相關的 code 我直接刪掉
           // 反正應該是廣告XD
           //}}
 
-          var l = function () {
-            c._plurksFetched(h, e);
-          };
-          var g = [];
-          AJS.map(h, function (o) {
-            g.push(o.owner_id);
-            //{{ start fbinplurk hack 這兩行好像在官方的code被移除了…
-            //但我不知道為什麼要刪@@
-            if(o.replurker_id) 
-              g.push(o.replurker_id);
-            ////}}
-          });
-          if(c.user_ids || c.private_only || c.responded_only || c.favorite_only || c.notAtBegin || !(window.FB && window.FB.fetchStatusAfterGetPlurks)){
-            PlurkAdder.fetchUsersIfNeeded(g, l, "gp");
-          } else {
-            FB.fetchStatusAfterGetPlurks(h, g, l, c);
-          }
+          c._plurksFetched(g, e);
         };
       };
       //{{start fbinplurk hack 用個sendReq 包起來
@@ -246,40 +230,6 @@
     };
     //}}
 
-    PlurkSearch.showPane = function (c, a, notReload) {
-      var d = AJS.$gc(AJS.$gp(c, "ul"), "li", "tt_selected");
-      AJS.removeClass(d, "tt_selected");
-      AJS.addClass(c, "tt_selected");
-      AJS.hideElement(AJS.$bytc(null, "pane"));
-      AJS.showElement(AJS.$("pane_" + a));
-      if (a == "search") {
-        Plurks.removeCurrentOpen();
-        var b = AJS.$("current_query");
-        AJS.$("current_query").focus();
-        AJS.setVisibility(AJS.$("filter_tab"), false);
-        if (!PlurkSearch.old_getPlurks) {
-          PlurkSearch.old_getPlurks = TimeLine.getPlurks
-        }
-        TimeLine.getPlurks = PlurkSearch._getPlurks;
-        if (PlurkSearch.current_query) {
-          PlurkSearch.query(PlurkSearch.current_query)
-        } else {
-          TimeLine.reset();
-          PlurkSearch.showStartMessage()
-        }
-        AJS.setVisibility(AJS.$("updater"), false)
-      } else {
-        if (TimeLine.getPlurks != PlurkSearch.old_getPlurks && PlurkSearch.old_getPlurks) {
-          TimeLine.getPlurks = PlurkSearch.old_getPlurks;
-          AJS.setVisibility(AJS.$("filter_tab"), true);
-          if(!notReload){
-            AJS.$bytc("a", "filter_selected")[0].onclick();
-          }
-          AJS.setVisibility(AJS.$("updater"), true)
-        }
-      }
-      PlurkSearch.current_pane = a
-    };
     TimeLineCache.addPlurk = function (a) {
       getTimeAndFixPlurk(a);
       var uid = SiteState.getSessionUser().uid;
@@ -699,7 +649,7 @@
       }
     };
     if(!AJS.$("filter_tab") && AJS.$("dashboard_holder")){
-      document.body.insertBefore(AJS.UL({id:"filter_tab"}), AJS.$("dashboard_holder"));
+      jQuery(AJS.UL({id:"filter_tab"})).insertBefore(AJS.$("dashboard_holder"));
     }
     AJS.ACN(AJS.$("filter_tab"), AJS.LI({}, AJS.A({id:"timeline_jumper_tab_btn", s:"cursor:pointer", c:"off_tab"}, 
       jumperTabSpan = AJS.SPAN({}, "河道任意門") ,
@@ -945,6 +895,135 @@
   ////}}
   TimeLineJumperInit();
 })();
+PlurkSearch = {
+  has_more: true,
+  init: function () {
+    SETTINGS = {};
+    FRIENDS = {};
+    FANS = {};
+    TimeLine.getPlurks = PlurkSearch._getPlurks
+  },
+  query: function (a) {
+    AJS.$("current_query").value = a;
+    PlurkSearch.current_query = a;
+    var b = AJS.urlencode(a.replace(/\s+/g, "+"));
+    b = b.replace(/%2B/, "+");
+    if (window.location.toString().indexOf("psearch") != -1) {
+      window.location.hash = "q=" + b
+    }
+    PlurkSearch.has_more = true;
+    PlurkSearch.offset = null;
+    Plurks.removeCurrentOpen();
+    TimeLine.reset();
+    TimeLine.getPlurks();
+    window.scrollTo(0, 0);
+    return false
+  },
+  ajaxSearch: function () {
+    var a = AJS.$("current_query").value;
+    PlurkSearch.query(a);
+    _gaq.push(["_trackEvent", "Search_plurk", "keypress_enter", a]);
+    return false
+  },
+  showStartMessage: function () {
+    TimeLine.renderText(_("Search Plurk and find out what's happening RIGHT now."))
+  },
+  showPane: function (c, a, notReload) {
+    var d = AJS.$gc(AJS.$gp(c, "ul"), "li", "tt_selected");
+    AJS.removeClass(d, "tt_selected");
+    AJS.addClass(c, "tt_selected");
+    AJS.hideElement(AJS.$bytc(null, "pane"));
+    AJS.showElement(AJS.$("pane_" + a));
+    if (a == "search") {
+      Plurks.removeCurrentOpen();
+      var b = AJS.$("current_query");
+      AJS.$("current_query").focus();
+      AJS.setVisibility(AJS.$("filter_tab"), false);
+      if (!PlurkSearch.old_getPlurks) {
+        PlurkSearch.old_getPlurks = TimeLine.getPlurks
+      }
+      TimeLine.getPlurks = PlurkSearch._getPlurks;
+      if (PlurkSearch.current_query) {
+        PlurkSearch.query(PlurkSearch.current_query)
+      } else {
+        TimeLine.reset();
+        PlurkSearch.showStartMessage()
+      }
+      AJS.setVisibility(AJS.$("updater"), false)
+    } else {
+      if (TimeLine.getPlurks != PlurkSearch.old_getPlurks && PlurkSearch.old_getPlurks) {
+        TimeLine.getPlurks = PlurkSearch.old_getPlurks;
+        AJS.setVisibility(AJS.$("filter_tab"), true);
+        if(!notReload){
+          AJS.$bytc("a", "filter_selected")[0].onclick();
+        }
+        AJS.setVisibility(AJS.$("updater"), true)
+      }
+    }
+    PlurkSearch.current_pane = a
+  },
+  updateShareLink: function () {
+  },
+  showTrends: function (a) {
+    a = a.replace(/"/g, "%22");
+    return GB_showCenter(_("Plurk trends"), "/ptrends?q=" + a, 700, 550)
+  },
+  showTrendGraph: function (b) {
+    var a = AJS.$gc(b, "a", "trend_graph");
+    AJS.setVisibility(a, true)
+  },
+  hideTrendGraph: function (b) {
+    var a = AJS.$gc(b, "a", "trend_graph");
+    AJS.setVisibility(a, false)
+  },
+  _getPlurks: function () {
+    var b = PlurkSearch;
+    if (b.getting_plurks || !b.has_more) {
+      return
+    }
+    if (TimeLine.plurks.length > 0) {
+      TimeLine.showLoadingBlock()
+    }
+    var a = AJS.loadJSON("/Search/query");
+    TimeLine.removeEmpty();
+    if (TimeLine.plurks.length > 0) {
+      TimeLine.showLoadingBlock()
+    } else {
+      TimeLine.showLoading()
+    }
+    b.getting_plurks = true;
+    a.addCallback(function (d) {
+      b.has_more = d.has_more;
+      b.getting_plurks = false;
+      TimeLine.hideLoading();
+      if (d.error) {
+        TimeLine.renderText(_("An unknown error happened."))
+      } else {
+        if (b.has_more) {
+          b.offset = d.last_offset
+        }
+        AJS.update(USERS, d.users);
+        try {
+          TimeLine._plurksFetched(d.plurks)
+        } catch (f) {
+          AJS.log(f)
+        }
+      }
+    });
+    a.addErrback(function () {
+      b.getting_plurks = false;
+      TimeLine.hideLoading();
+      TimeLine.renderText(_("An unknown error happened."))
+    });
+    var c = {
+      query: b.current_query
+    };
+    if (b.offset) {
+      c.offset = b.offset
+    }
+    a.sendReq(c)
+  }
+};
 //}}whole TimeLine jumper (End)
 try {window.FRIENDS;} catch (e) {window.FRIENDS = null;}
 if(window.FRIENDS != null && SiteState.canEdit()){
@@ -973,14 +1052,15 @@ if(window.FRIENDS != null && SiteState.canEdit()){
           }
         }
       });
-    };
+    }
+    var panel_tabs = jQuery("<ul style=\"\" id=\"toggle_tab\"><li id=\"plurks_pane_li\" onclick=\"PlurkSearch.showPane(this, 'plurk')\" class=\"tt_selected\">Plurk</li><li onclick=\"PlurkSearch.showPane(this, 'search')\">搜尋</li></ul>").prependTo('#dashboard_holder');
     var new_li = AJS.SPAN({id: "fipLoginButton", style:"vertical-align:middle;display: inline-block; width: 100px; height:22px; overflow: hidden;"});
     new_li.innerHTML = '<fb:login-button scope="manage_notifications,read_friendlists,user_photos,user_videos,publish_stream,read_stream,friends_status,user_status,photo_upload" autologoutlink="true"></fb:login-button>';
     var new_li2 = AJS.SPAN({id: "fipStatus"});
     new_li2.innerHTML = '<a href="http://www.plurk.com/p/75f5hn" target="_blank" style="font-size:12px;"><img  style="vertical-align:middle;margin:2px;" src="http://grassboy.tw/fbTools/about.png" onmouseout="return AmiTooltip.hide()" onmouseover="return AmiTooltip.show(this, AJS.DIV({c: \'tooltip_cnt\'}, AJS.IMG({style:\'border:none;\',src:\'http://grassboy.tw/fbTools/about-48.png\'}), AJS.B(\'關於Facebook in Plurk~~ (請按我見說明)\')), event)" /></a>';
     
-    document.getElementById("toggle_tab").appendChild(new_li);
-    document.getElementById("toggle_tab").appendChild(new_li2);
+    panel_tabs.append(new_li);
+    panel_tabs.append(new_li2);
     var new_div = document.createElement("div");
     new_div.id = "fb-root";
     document.body.appendChild(new_div);
@@ -1086,118 +1166,6 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         return FB.userInfo["unknown"];
       }
     };
-    ////}}
-    //{{ 取得來自Facebook的訊息
-    FB.fetchStatusAfterGetPlurks = function(h, g, j, c){
-      var last_time;
-      if(h.length > 0){
-        last_time = parseInt(h[h.length - 1].posted.getTime() / 1000) * 1000;
-      } else {
-        last_time = 0;
-      }
-
-      if (c.offset == 0) {
-        var query = FB.Data.query('SELECT uid,status_id,message,time,place_id FROM status WHERE uid IN ({0}) AND time > {1} ', FB.fipAllUid, (last_time / 1000));
-      } else {
-        var query = FB.Data.query('SELECT uid,status_id,message,time,place_id FROM status WHERE uid IN ({0}) AND time > {1} AND time <= {2}', FB.fipAllUid, (last_time / 1000), parseInt(c.offset.getTime() / 1000));
-      }
-      var fb_getP_timeout = 0;
-      var fb_getP_timeout_remain = 30;
-      fb_getP_timeout = setInterval( function(){
-        if((--fb_getP_timeout_remain) <= 0 || FB.errorOccurred){
-          PlurkAdder.fetchUsersIfNeeded(g, j, "gp");
-          fb_getP_timeout = -1;
-        }
-      }, 1000); //三十秒後就只顯示Plurk原本的Timeline
-      //*
-      var fbGetPlurks_callback = function (rows) {
-        if(fb_getP_timeout==-1)
-          return;
-        if (fb_getP_timeout){ 
-          clearInterval(fb_getP_timeout); //把預設的timeline disable掉
-        }
-
-        var m = 0;
-        var n = 0;
-        var fb_multi_timeout = 1;
-        //var fb_getP_timeout3 = setTimeout(function(){
-          fb_multi_timeout = -1;
-          for (m = 0; m < rows.length; m++) {
-            rows[m] = status2plurk(rows[m]);
-            while (n < h.length && rows[m].posted < h[n].posted) {
-              n++;
-            }
-            if (!rows[m].content.match(/http:\/\/plurk\.com\/p\/[a-z0-9]{6}$/) && 
-                !rows[m].content.match(/<fbinPlurkSetting /)) 
-              h.splice(n++, 0, rows[m]);
-          }
-          PlurkAdder.fetchUsersIfNeeded(g, j, "gp");
-        //}, 5000);
-        /*
-        FB.api( //嚐試將取得的fbstatus 再作multiquery
-          {
-          method: 'fql.multiquery',
-          queries:((function(){
-            var result = {};
-            var fetched_user = {};
-            var time_limit;
-            if(c.offset==0){
-              time_limit = " AND time > " + (last_time / 1000);
-            } else {
-              time_limit = " AND time > " + (last_time / 1000) + " AND time <= " + (c.offset.getTime() / 1000);
-            }
-            for(var i=0; i<rows.length; i++){
-              if(fetched_user["u"+rows[i].uid]){
-                continue;
-              } else {
-                fetched_user["u"+rows[i].uid] = true;
-                result["query"+i] = "SELECT uid, status_id, message, time FROM status WHERE uid = " + rows[i].uid + time_limit;
-              }
-            }
-            return result;
-          })())
-          },
-          function(response){
-          console.dir(response);
-          if(fipHasError(response)) return;
-            if(response===null) response = [];
-          if(fb_multi_timeout==-1){
-            return;
-          }
-          clearTimeout(fb_getP_timeout3);
-          var sorted_response = [];
-          var m = 0;
-          var n = 0;
-          for (m = 0; m < response.length; m++){
-            if(response[m].fql_result_set[0]) //如果至少有一結果
-              sorted_response = sorted_response.concat(response[m].fql_result_set);
-          }
-          delete response;
-
-          sorted_response.sort(function(a,b){
-            return b.time - a.time;
-          });
-          rows = sorted_response;
-          for (m = 0; m < rows.length; m++) {
-            rows[m] = status2plurk(rows[m]);
-            while (n < h.length && rows[m].posted < h[n].posted) {
-              n++;
-            }
-            if (!rows[m].content.match(/http:\/\/plurk\.com\/p\/[a-z0-9]{6}$/) && 
-                !rows[m].content.match(/<fbinPlurkSetting /)) 
-              h.splice(n++, 0, rows[m]);
-          }
-          delete sorted_response;
-          PlurkAdder.fetchUsersIfNeeded(g, j, "gp");
-          }, function(response){
-            alert("error occured 1140");
-          }
-        );  */            
-
-
-      }
-      query.wait(fbGetPlurks_callback, function(){fbGetPlurks_callback([]);}); 
-    }
     ////}}
 
     /*****************************************************/
@@ -1312,13 +1280,13 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         PlurkAdder._fip2FBerror("Facebook帳號未登入or未授權");
       }
     }
-    PlurkPoster.showSyncForm = function () {
-      var a = AJS.$("sync_checked_form");
-      if (a) {
-        a.style.display = "block";
-      } else {
-        AJS.ACN(AJS.$("sync_checked_holder"), PlurkPoster._renderSyncCheckbox());
 
+    PlurkPoster.showSyncForm = function () {
+      var d = AJS.$("sync_checked_form");
+      if (d) {
+        d.style.display = "block"
+      } else {
+        AJS.ACN(AJS.$("sync_checked_holder"), PlurkPoster._renderSyncCheckbox())
         var to_fb_fip, to_fb_default;
         AJS.ACN(AJS.$("sync_checked_ul"), AJS.LI(to_fb_default = AJS.INPUT({
           onclick: "localStorage._gFIP2FB=null;delete localStorage._gFIP2FB; MoreOptions.fip_sync = false",
@@ -1344,20 +1312,24 @@ if(window.FRIENDS != null && SiteState.canEdit()){
           to_fb_default.checked = "checked";
         }
       }
+      var a = jQuery(".cmp_sync_on");
+      var c = a.parents(".iframe_holder");
+      if (c.length) {
+        var b = a.offset().top - c.offset().top + 36 + 100;
+        if (c.height() < b) {
+          c.height(b)
+        }
+      }
       PlurkPoster.syncShown = 1
     };
 
     PlurkAdder.plurkResponse = function (e, g, j) {
+      //{{ start hack of fip: c 為我定出來的變數如果之後 噗浪有定義 c 這裡的 c 就要換掉
       var c = getPD($dp.current_div).obj;
-      //{{ start hack of fip: c 為 上一行的 c
+      var a = GLOBAL.session_user.default_lang || "en";
       var fb_mode = c.fb_uid ? true : false;
       var fip_sync_id = c.fip_sync_id || null;
       ////}}
-      if (!SiteState.checkIfLoggedIn()) {
-        alert(_("You seem to be logged out. We will redirect you to login page."));
-        window.location = "/Users/showLogin"
-      }
-      var a = c.lang;
       if (e.disabled || e.value.length == 0 || MaxChar.calculateContentLength(e.value, a) > 210) {
         return false
       }
@@ -1370,7 +1342,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       f = PlurkAdder.resolveNickNames(f);
       PlurkAdder.posting = true;
       e.disabled = true;
-      AJS.setHTML(AJS.$("input_small_cu"), "<span style=\"color: black\">" + _("Plurking response...") + "</span>");
+      AJS.setHTML(AJS.$("input_small_cu"), '<span style="color: black">' + _("Plurking response...") + "</span>");
       //{{ start hack of fip: c 為 第一行的 c, e為此 function 第一個參數 e, 
       if (fb_mode) {
         FB.api('/' + c.fb_post_id + '/comments', 'post', {
@@ -1419,6 +1391,11 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       ////}}
       h.addErrback(PlurkAdder._antiSpamErrors);
       h.addErrback(function (m, l) {
+        if (m == "not-logged-in") {
+          alert(_("It seems that your login session has expired. Please login again"));
+          window.location = "/Users/showLogin";
+          return
+        }
         if (l.status == 400) {} else {
           if (l.status == 404) {
             AJS.RCN($dp.list, AJS.DIV({
@@ -1458,7 +1435,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         lang: a,
         uid: SiteState.getSessionUser().id
       });
-      return false;
+      return false
     };
     Responses.responseMouseOver = function (b) {
       if (Responses.mouseTO) {
@@ -1466,14 +1443,20 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         Responses._responseMouseOut()
       }
       var e = getPD(b).obj;
+      //{{ start of fbinplurk hack: e 為前一行的 e 
       var fb_mode = e.fb_uid ? true : false;
+      ////}}
       var d = Plurk.getById(e.plurk_id);
       var f = e.posted;
       var g = "@ " + Cal.formatMonthDate(f) + " - " + Cal.formatTime(f.getHours(), f.getMinutes());
       var h, c = null;
-      var a = SiteState.getSessionUser().id;
-      var p = e.user_id == a;
-      var j = d.owner_id == a;
+      var a = null;
+      if (SiteState.getSessionUser()) {
+        a = SiteState.getSessionUser().id
+      }
+      var o = (e.user_id == a) || e.my_anonymous;
+      var j = d.owner_id == a || d.my_anonymous;
+      //{{  start of fbiplurk hack: 直接複制即可
       var delFBcomment = function (e, d, b) {
         var eid = e.id;
         if (confirm(_("Are you sure you want to delete this response?"))) {
@@ -1496,46 +1479,54 @@ if(window.FRIENDS != null && SiteState.canEdit()){
           });
         }
       };
-      if ((fb_mode && e.fb_uid == FB.getAuthResponse().userID) || (!fb_mode && (p || j))) {
+      ////}}
+      //{{  start of fbiplurk hack: 與 if (o || j) block 結合 e 為一開始的 e
+      if ((fb_mode && e.fb_uid == FB.getAuthResponse().userID) || (!fb_mode && (o || j))) {
         h = AJS.A({
           c: "resp_icon del_icon",
           title: _("delete this response")
         }, _("delete"));
         AJS.AEV(h, "click", fb_mode ? AJS.$p(delFBcomment, e, b, h) : AJS.$p(Responses.deleteResponse, b, h));
       }
-      if ((!fb_mode && !p) || (fb_mode && e.fb_uid != FB.getAuthResponse().userID)) {
-        replyToHandler = function (eid) {
-          return function () {
-            var r;
-            if (fb_mode) {
-              r = "@" + FB.getUser(e.fb_uid).name + ": " + AJS.$("input_small").value + "~";
-            } else {
-              var q = AJS.$("m" + eid).getElementsByTagName("a")[0].getAttribute("href", 2).substring(1);
-              r = "@" + q + ": " + AJS.$("input_small").value + "~";
-            }
-            AJS.$("input_small").value = "";
-            InputUtil.insertAtCursor(AJS.$("input_small"), r);
-
-          };
-        };
+      ////}}
+      //{{  start of fbiplurk hack: 與 if (!o) block 結合: e 為 getPD 時的 e
+      if (!o 
+          && !fb_mode || (fb_mode && e.fb_uid != FB.getAuthResponse().userID)
+      ) {
         c = AJS.A({
           c: "reply_to",
           title: _("reply to this person")
         }, _("reply"));
-        AJS.AEV(c, "click", replyToHandler(e.id));
+        AJS.AEV(c, "click", function () {
+          var r = AJS.$("m" + e.id).getElementsByTagName("a")[0];
+          var p = r.getAttribute("href", 2).substring(1);
+          var q = AJS.$("input_small").value;
+          if (q && q[q.length - 1] != " ") {
+            q += " "
+          }
+          if (p == "anonymous") {
+            p = r.innerHTML;
+            q = q + p + ": " + q + "~"
+          } else {
+            q = q + "@" + p + ": ~"
+          }
+          AJS.$("input_small").value = "";
+          InputUtil.insertAtCursor(AJS.$("input_small"), q)
+        })
       }
+      ////}}
       var m = AJS.DIV({
         c: "response_time plurk_cnt"
       }, AJS.DIV({
         c: "holder"
       }, AJS.P(g), AJS.BR(), c, h));
-      var o = AJS.absolutePosition(b);
-      o.x += $dp.holder.offsetWidth - 6;
+      var n = AJS.absolutePosition(b);
+      n.x += $dp.holder.offsetWidth - 6;
       var l = AJS.$gp(b, "div", "list");
-      o.y -= l && l.scrollTop || 0;
+      n.y -= l && l.scrollTop || 0;
       AJS.setStyle(m, {
-        top: o.y,
-        left: o.x
+        top: n.y,
+        left: n.x
       });
       AJS.ACN(AJS.getBody(), m);
       AJS.AEV(m, "mouseover", function () {
@@ -1563,7 +1554,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
 
           blank_window.loading_icon = AJS.DIV({
             s: "height:130px; margin:auto; text-align: center; font-size:12px; color:gray;"
-            },AJS.IMG({s:"margin-top: 40px",src:"http://statics.plurk.com/6ad45e7e08754eba760d200a93f1d115.gif"}), AJS.BR(), 
+            },AJS.IMG({s:"margin-top: 40px",src:"http://s.plurk.com/6ad45e7e08754eba760d200a93f1d115.gif"}), AJS.BR(), 
             tips
           );
 
@@ -1621,13 +1612,13 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       if (d.length == 2 && d[0] == d[1]) {
         d = [d[0]]
       }
-      AJS.map(d, function (o, h) {
-        if (o == a.owner_id && d.length != 1) {
+      AJS.map(d, function (n, h) {
+        if (n == a.owner_id && d.length != 1) {
           return
         }
-        var f = SiteState.getUserById(o);
+        var f = SiteState.getUserById(n);
         var m = SiteState.getSessionUser();
-        if (parseInt(o) == m.uid) {
+        if (parseInt(n) == m.uid) {
           f = m
         }
         if (f) {
@@ -1647,8 +1638,11 @@ if(window.FRIENDS != null && SiteState.canEdit()){
           b = true
         }
       })
+      
+      //{{ Start of fbinplurk hack: 直接加上這段即可 e 為第一個參數 e, c 為前幾行 c.length 的 c
       var show_limit_icon = Plurks._renderListAllIcon(c, _("private plurk to"), _("正在取得看得到這則噗的使用者清單"));
       AJS.ACN(e, show_limit_icon);
+      ////}}
     };
     Plurks.__renderReplurkStr = function (c, f) {
       var b = f.obj;
@@ -1709,61 +1703,54 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       }
     };
     ////}} Whole ListAll (End)
-    Plurks._renderIcons = function (e, d) {
-      var c = e.obj;
-      var a = e.div;
-      var f = jQuery(a);
+    Plurks._renderIcons = function (f, d) {
+      var a = f.obj;
+      var h = f.div;
+      var b = jQuery(h);
       if (!d) {
-        d = SiteState.getPlurkUser(c)
+        d = SiteState.getPlurkUser(a)
       }
       if (!Plurks.$icon_pri) {
-        Plurks.$icon_pri = jQuery("<div class='plurk_icon private'>").append("<img src='//statics.plurk.com/c550f52f61da13964d5415c07b7506ca.png' height='16' width='16'>")
+        Plurks.$icon_pri = jQuery("<div class='plurk_icon private'>").append("<img src='//s.plurk.com/c550f52f61da13964d5415c07b7506ca.png' height='16' width='16'>")
       }
       if (!Plurks.$icon_fav) {
-        Plurks.$icon_fav = jQuery("<div class='plurk_icon favorite_icon'>").append("<img src='//statics.plurk.com/ffdca9715cfcd8ea7adc140c1f9d37df.png' height='16' width='16'>")
+        Plurks.$icon_fav = jQuery("<div class='plurk_icon favorite_icon'>").append("<img src='//s.plurk.com/ffdca9715cfcd8ea7adc140c1f9d37df.png' height='16' width='16'>")
       }
       if (!Plurks.$icon_replurk) {
-        Plurks.$icon_replurk = jQuery("<div class='plurk_icon private'>").append("<img src='//statics.plurk.com/2da9c174ff4bce649887dba83a97222e.png' height='16' width='16'>")
+        Plurks.$icon_replurk = jQuery("<div class='plurk_icon private'>").append("<img src='//s.plurk.com/2da9c174ff4bce649887dba83a97222e.png' height='16' width='16'>")
       }
       if (!Plurks.$icon_birth) {
-        Plurks.$icon_birth = jQuery("<div class='plurk_icon bday'>").append("<img src='//statics.plurk.com/095108068bb9c366ab82a362d84610aa.png' height='16' width='16'>")
+        Plurks.$icon_birth = jQuery("<div class='plurk_icon bday'>").append("<img src='//s.plurk.com/095108068bb9c366ab82a362d84610aa.png' height='16' width='16'>")
       }
       //{{ startof fb_mode: 這段直接加上去即可
       if (!Plurks.$fip_icon) {
         Plurks.$fip_icon = jQuery("<div class='plurk_icon private'>").append("<img src='http://www.grassboy.tw/fbTools/fb_icon.png' height='16' width='16'>")
       }
       //}} endof fb_mode hack
-      f.find("div.plurk_icon").remove();
+      b.find("div.plurk_icon").remove();
       var g = 15;
-      if (c.limited_to) {
-        Plurks.$icon_pri.clone().css("left", g).appendTo(f);
+      if (a.limited_to) {
+        Plurks.$icon_pri.clone().css("left", g).appendTo(b);
         g += 17
       }
-      if (c.favorite) {
-        Plurks.$icon_fav.clone().css("left", g).appendTo(f);
+      if (a.favorite) {
+        Plurks.$icon_fav.clone().css("left", g).appendTo(b);
         g += 17
       }
-      //{{ startof fb_mode hack:c為前一行if block的c.favorite f為前兩個if block的f g為前兩個if block的g 
-      if (c.fb_uid && c.id.toString().indexOf("_")==-1) {
-        Plurks.$fip_icon.clone().css("left", g).appendTo(f);
+      //{{ startof fb_mode hack:a為前一行if block的a.favorite b為前兩個if block的b g為前兩個if block的g 
+      if (a.fb_uid && a.id.toString().indexOf("_")==-1) {
+        Plurks.$fip_icon.clone().css("left", g).appendTo(b);
         g += 17
       }
       //}} endof fb_mode hack
-      if (c.replurked) {
-        Plurks.$icon_replurk.clone().css("left", g).appendTo(f)
+      if (a.replurked) {
+        Plurks.$icon_replurk.clone().css("left", g).appendTo(b)
       }
-      var j = d.date_of_birth;
-      if (j) {
-        if (typeof j == "string") {
-          j = new Date(j)
-        }
-        var h = new Date(j.getTime() + j.getTimezoneOffset() * 60000);
-        var b = new Date();
-        if ((h.getMonth() == b.getMonth()) && (h.getDate() == b.getDate())) {
-          if (SiteState.getSessionUser().beta && console) {
-            console.log(d, j, typeof j, h, b, f)
-          }
-          Plurks.$icon_birth.clone().appendTo(f)
+      var e = d.date_of_birth;
+      if (e && typeof (e) == "object") {
+        var c = new Date();
+        if ((e.getUTCMonth() == c.getMonth()) && (e.getUTCDate() == c.getDate())) {
+          Plurks.$icon_birth.clone().appendTo(b)
         }
       }
     };
@@ -1874,14 +1861,14 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       Plurks.fixBottomPlurk(f);
       return false
     };
-    Plurks.expand = function (j) {
-      var B = Plurks;
-      var l = $dp.holder;
+    Plurks.expand= function (l) {
+      var A = Plurks;
+      var m = $dp.holder;
       if ($dp.removing) {
         return true
       }
-      if ($dp.current_div == j && !$dp.hoverFlag) {
-        B._removeExpand(false);
+      if ($dp.current_div == l && !$dp.hoverFlag) {
+        A._removeExpand(false);
         return true
       }
       $dp.hoverFlag = null;
@@ -1890,17 +1877,17 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       if (InfoOverlay.cloned) {
         InfoOverlay.hideInfoOverlay()
       }
-      var u = AJS.getWindowSize().w;
-      var d = AJS.absolutePosition(j).x;
-      var y = (u - d);
-      if (y < 460) {
-        $dp.div2 = j;
+      var t = AJS.getWindowSize().w;
+      var f = AJS.absolutePosition(l).x;
+      var x = (t - f);
+      if (x < 460) {
+        $dp.div2 = l;
         try {
-          B._removeExpand(false);
+          A._removeExpand(false);
           $dp.removing = true
-        } catch (v) {}
-        var x = (730 - y) / 4;
-        TimeLine.slideBack(4, -x, "left", function () {
+        } catch (u) {}
+        var w = (730 - x) / 4;
+        TimeLine.slideBack(4, -w, "left", function () {
           if (!$dp.div2) {
             return
           }
@@ -1909,127 +1896,126 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         });
         return true
       }
-      AJS.removeClass(j, "link_extend");
-      var h = getPD(j);
-      var f = h.obj;
-      //{{ fb_in_plurk_hack用到變數 f 為上一行的 f = h.obj
-      var fb_mode = (f.fb_uid ? true : false);
-      if (TimeLine.fb_new_msg[f.fb_post_id]){
+      AJS.removeClass(l, "link_extend");
+      var j = getPD(l);
+      var g = j.obj;
+      //{{ fb_in_plurk_hack用到變數 g 為上一行的 g = j.obj
+      var fb_mode = (g.fb_uid ? true : false);
+      if (TimeLine.fb_new_msg[g.fb_post_id]){
         FB.api(
           {
             method: 'notifications.markRead',
-            notification_ids: TimeLine.fb_new_msg[f.fb_post_id]
+            notification_ids: TimeLine.fb_new_msg[g.fb_post_id]
           },
           function(response) {
             if(fipHasError(response)) return;
-            delete TimeLine.fb_new_msg[f.fb_post_id];
+            delete TimeLine.fb_new_msg[g.fb_post_id];
           }
         );
       }
       var fip_sync_icon = AJS.$("fip_sync_icon");
       if(fip_sync_icon){
-        if(!fb_mode && f.fip_sync_id){
+        if(!fb_mode && g.fip_sync_id){
           fip_sync_icon.style.display = "inline-block";
         } else {
           fip_sync_icon.style.display = "none";
         }
       }
       ////}}
-      if (B.poster) {
-        var g = B.poster;
-        if (B.visit_timeline) {
+      if (A.poster) {
+        var h = A.poster;
+        if (A.visit_timeline) {
           var b;
-          var D = SiteState.getPlurkUser(f);
-          var C = D.display_name && D.display_name.length > 0 ? D.display_name : D.nick_name;
-          var q = format(_("Visit %s's timeline to respond"), C);
-          var m = AJS.A({
-            href: "/" + D.nick_name
+          var C = SiteState.getPlurkUser(g);
+          var B = C.display_name && C.display_name.length > 0 ? C.display_name : C.nick_name;
+          var q = format(_("Visit %s's timeline to respond"), B);
+          var n = AJS.A({
+            href: "/" + C.nick_name
           }, q);
-          AJS.swapDOM(g.table, b = AJS.DIV({
+          AJS.swapDOM(h.table, b = AJS.DIV({
             s: "text-align: center;"
-          }, m));
-          g.table = b
+          }, n));
+          h.table = b
         } else {
-          g.input.disabled = false;
-          g.input.value = "";
-          g.menu.updateSessionQual();
-          var t = AJS.$gc(l, "span", "m_qualifier");
-          g.menu.changeMenuLang(t, f.lang)
+          h.input.disabled = false;
+          h.input.value = "";
+          h.menu.updateSessionQual()
         }
         var o = SiteState.getSessionUser();
-        if (f.no_comments == 1 && o && o.id != f.owner_id) {
+        var d = o && o.id == g.owner_id;
+        if (g.no_comments == 1) {
           AJS.hideElement($dp.post_holder);
           AJS.hideElement($dp.commets_only_friends);
           AJS.showElement($dp.commets_disabled)
         } else {
-          if (f.no_comments == 2) {
+          if (g.no_comments == 2) {
+            AJS.hideElement($dp.post_holder);
             AJS.hideElement($dp.commets_disabled);
-            AJS.showElement($dp.commets_only_friends);
-            AJS.showElement($dp.post_holder)
-          } else {
-            if (f.no_comments == 1) {
-              AJS.hideElement($dp.commets_only_friends);
-              AJS.showElement($dp.post_holder);
-              AJS.showElement($dp.commets_disabled)
-            } else {
-              AJS.hideElement($dp.commets_only_friends);
-              AJS.hideElement($dp.commets_disabled);
+            if (FRIEND_IDS.indexOf(g.owner_id)) {
               AJS.showElement($dp.post_holder)
             }
+            AJS.showElement($dp.commets_only_friends)
+          } else {
+            AJS.hideElement($dp.commets_only_friends);
+            AJS.hideElement($dp.commets_disabled);
+            AJS.showElement($dp.post_holder)
           }
         }
+        if (d) {
+          AJS.showElement($dp.post_holder)
+        }
       }
-      B.removeCurrentOpen();
-      PlurkBlock.toggleHighlight(j, 1);
-      $dp.current_div = j;
-      AJS.addClass(j, "plurk_box");
-      var z = SiteState.getSessionUser();
+      A.removeCurrentOpen();
+      PlurkBlock.toggleHighlight(l, 1);
+      $dp.current_div = l;
+      AJS.addClass(l, "plurk_box");
+      var y = SiteState.getSessionUser();
       //{{ fb_in_plurk_hack 只要把兩段if else放進block就行
       if(!fb_mode){
-        if (B.show_expand && z && f.owner_id == z.uid) {
+        if (A.show_expand && y && g.owner_id == y.uid) {
           AJS.showElement($dp.manager);
-          AJS.ACN(getPD(j).td_cnt, $dp.manager);
+          AJS.ACN(getPD(l).td_cnt, $dp.manager);
           $dp.save_link.innerHTML = _("save")
         } else {
           if (SiteState.canEdit()) {
-            if (f.is_unread == 2) {
+            if (g.is_unread == 2) {
               AJS.addClass(AJS.setHTML($dp.mute_link, _("unmute")), "unmute")
             } else {
               AJS.removeClass(AJS.setHTML($dp.mute_link, _("mute")), "unmute")
             }
           }
         }
-        if (f.is_unread == 2) {
-          AJS.addClass(l, "muted")
+        if (g.is_unread == 2) {
+          AJS.addClass(m, "muted")
         } else {
-          AJS.removeClass(l, "muted")
+          AJS.removeClass(m, "muted")
         }
       } else {
 
       }
       //}}
-      var s = jQuery(l);
-      var w = {
-        pid36: f.plurk_id.toString(36),
-        pid: f.plurk_id
+      var s = jQuery(m);
+      var v = {
+        pid36: g.plurk_id.toString(36),
+        pid: g.plurk_id
       };
-      var r = jQuery(Plurks.infoBoxTmpl(w));
-      s.find(".info_box").remove();
+      var r = jQuery(Plurks.infoBoxTmpl(v));
+      s.find(".info_box.controller").remove();
       s.find("#resp_banner_ads").remove();
       s.append(r);
       $dp.info_box = r.get(0);
-      //{{ fb_in_plurk_hack: f: 第一段hack的 f; 這段 hack 的 else block 直接把原始的 code block 包住即可
+      //{{ fb_in_plurk_hack: g: 第一段hack的 g; 這段 hack 的 else block 直接把原始的 code block 包住即可
       if(fb_mode){
         r.find('.report_link a').remove();
-        r.find('.perma_link a').attr("href", ["http://www.facebook.com/permalink.php?story_fbid=", f.plurk_id,"&id=", f.fb_uid].join(''));
-        if(f.fb_place_id){
+        r.find('.perma_link a').attr("href", ["http://www.facebook.com/permalink.php?story_fbid=", g.plurk_id,"&id=", g.fb_uid].join(''));
+        if(g.fb_place_id){
           var a = r.find(".plurk_loc");
           if (!window.GB_showCenter) {
             return
           }
-          a.find("a").text('@'+f.fb_place.name).click(function () {
-            GB_showCenter(['<a target="_blank" href="http://www.facebook.com/',f.fb_place_id,'" title="觀看 Facebook 專頁..."><img src="http://www.grassboy.tw/fbTools/fb_icon.png"></a> ', f.fb_place.name].join(''), 
-              ["https://maps.google.com.tw/maps?q=",f.fb_place.lat,"+",f.fb_place.lon,"+(",encodeURIComponent(f.fb_place.name),")&hl=zh-TW&t=m&ie=UTF8&z=15&iwloc=A&ll=",f.fb_place.lat,"+",f.fb_place.lon,"&output=embed"].join(''),
+          a.find("a").text('@'+g.fb_place.name).click(function () {
+            GB_showCenter(['<a target="_blank" href="http://www.facebook.com/',g.fb_place_id,'" title="觀看 Facebook 專頁..."><img src="http://www.grassboy.tw/fbTools/fb_icon.png"></a> ', g.fb_place.name].join(''), 
+              ["https://maps.google.com.tw/maps?q=",g.fb_place.lat,"+",g.fb_place.lon,"+(",encodeURIComponent(g.fb_place.name),")&hl=zh-TW&t=m&ie=UTF8&z=15&iwloc=A&ll=",g.fb_place.lat,"+",g.fb_place.lon,"&output=embed"].join(''),
             600, 800)
             return false
           });
@@ -2040,83 +2026,84 @@ if(window.FRIENDS != null && SiteState.canEdit()){
           if (!window.GB_showCenter) {
             return
           }
-          GB_showCenter(_("Report the following plurk as abuse"), this.href + "?overlay=1", 400, 650);
+          GB_showCenter(_("Report the following plurk as abuse"), this.href + "?overlay=1", 650, 400);
           return false
         });
-        if (f.latitude && f.longitude) {
+        if (g.latitude && g.longitude) {
           var a = r.find(".plurk_loc");
           if (!window.GB_showCenter) {
             return
           }
           a.find("a").click(function () {
-            GB_showCenter(_("Plurk location"), this.href, 400, 650);
+            GB_showCenter(_("Plurk location"), this.href, 650, 400);
             return false
           });
           a.show()
         }
-        if (z) {
-          Plurks._renderReplurkDetails(h);
-          Plurks._renderFavoriteCount(f)
+        if (y) {
+          Plurks._renderReplurkDetails(j);
+          Plurks._renderFavoriteCount(g)
         }
       }
       //}}
       var c = r.find(".limited_box");
-      if (f.limited_to) {
+      if (g.limited_to) {
         c.show();
-        var p = f.limited_to;
+        var p = g.limited_to;
         if (p == Plurk.friends_only) {
           c.text(_("private plurk to friends"))
         } else {
           if (p.replace) {
             p = p.replace(/\|\|/g, "|").replace(/^\|/, "").replace(/\|$/, "").split(/\|/)
           }
-          var A = p;
+          var z = p;
           if (p.length > 8) {
-            A = p.slice(0, 8)
+            z = p.slice(0, 8)
           }
-          PlurkAdder.fetchUsersIfNeeded(A, AJS.$p(Responses._renderLimitedTo, c.get(0), f, p, A), "lts")
+          PlurkAdder.fetchUsersIfNeeded(z, AJS.$p(Responses._renderLimitedTo, c.get(0), g, p, z), "lts")
         }
       }
       setTimeout(function () {
-        var E = jQuery(j).find(".plurk_cnt");
-        var F = E.offset();
-        var e = /metro_c\d+/.exec(E[0].className);
-        jQuery(l).css({
-          top: F.top + E.outerHeight(),
+        var D = jQuery(l).find(".plurk_cnt");
+        var F = D.offset();
+        var e = /metro_c\d+/.exec(D[0].className);
+        var E = jQuery(m);
+        E.css({
+          top: F.top + D.outerHeight(),
           left: F.left,
-          width: E.outerWidth()
+          width: D.outerWidth()
         }).find("div.list").attr("style", "").end().show();
         if (e) {
-          jQuery(l).attr("class", "plurk_box " + e[0])
+          E.attr("class", "plurk_box " + e[0])
         } else {
-          jQuery(l).attr("class", "plurk_box")
+          E.attr("class", "plurk_box")
         }
         $dp.holder_shown = true;
-        if (B.show_expand) {
+        if (A.show_expand) {
           Responses.showLoading($dp.list);
-          //{{ fb_in_plurk_hack : else區段只要放一行 , if區段內的f為第一段hack的f、l為else區段的l
+          //{{ fb_in_plurk_hack : else區段只要放一行 , if區段內的g為第一段hack的g、m為else區段的m
           if (fb_mode) {
-            var query = FB.Data.query('SELECT object_id, post_id, fromid, time, text, id FROM comment WHERE post_id = "{0}_{1}"', f.fb_uid, f.plurk_id);
+            var query = FB.Data.query('SELECT object_id, post_id, fromid, time, text, id FROM comment WHERE post_id = "{0}_{1}"', g.fb_uid, g.plurk_id);
             var expand_callback = function (rows) {
               var i = 0;
               for (i = 0; i < rows.length; i++) {
                 rows[i] = fbResp2plurkItem(rows[i]);
               }
-              Responses._renderList(l, rows);
+              Responses._renderList(m, rows);
             };
             query.wait(expand_callback, function(){expand_callback([]);});  
           } else {
-            Responses.fetchItems(l)
+            Responses.fetchItems(m)
           }
           ////}}
         }
       }, 0)
     };
-    Plurks.renderPlurk = function (j, m) {
+    Plurks.renderPlurk= function (j, m) {
       //{{ fb_in_plurk_hack: j 為第一個參數 j
       var fb_mode = (j.fb_uid ? true : false);
       ////}}
-      var y = Plurks;
+      var z = Plurks;
       var m = m || false;
       var c = SiteState.getPlurkUser(j);
       if (!c) {
@@ -2140,16 +2127,23 @@ if(window.FRIENDS != null && SiteState.canEdit()){
           return null
         }
       }
-      var t = j.content.replace("<script", "");
-      t = image_url_proto_relative(t);
+      var s = j.content.replace("<script", "");
+      s = image_url_proto_relative(s);
       var a = null;
-      var p = c;
+      var o = c;
       if (j.replurker_id) {
         a = SiteState.getUserById(j.replurker_id)
       }
-      var w = Qualifiers.format(c, j.qualifier, t, false, j.lang, j.id, (a != null));
-      var v = w[0];
-      //{{startof fb_mode hack: w為前一行的w[] j為前兩行j.lang的j; 
+      if (m && c.id == 99999) {
+        var w = j.handle;
+        var t = j.my_anonymous
+      } else {
+        var w = null;
+        var t = false
+      }
+      var x = Qualifiers.format(c, j.qualifier, s, false, j.lang, j.id, (a != null), w, t);
+      var v = x[0];
+      //{{startof fb_mode hack: x為前一行的x[] j為前兩行j.lang的j; 
       var fillUAName = function (id) {
         return function (rows) {
           if (rows.length > 0) {
@@ -2165,77 +2159,78 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         }
       };
       if (fb_mode) {
-        var obj_a = w[0].getElementsByTagName("a")[0]; 
+        var obj_a = x[0].getElementsByTagName("a")[0]; 
         obj_a.id = "uA_" + j.id;
         obj_a.href = "http://www.facebook.com/profile.php?id=" + j.fb_uid;
         obj_a.innerHTML = FB.getUser(j.fb_uid, fillUAName(j.id)).name;
         obj_a.target = "_blank";
       }
       //}} endof fb_mode hack
-      var q = w[1];
+      var p = x[1];
       if (a) {
-        p = a;
-        var s = SiteState.getSessionUser();
-        var z = a.display_name || a.nick_name;
-        var A = (s && s.default_lang) || "en";
-        var f = Qualifiers._(a.gender, A, "replurks");
-        var d = "<span><a class='name' href='/" + a.nick_name + "' data-uid='" + a.id + "'>" + z + "</a><span class='qualifier q_replurks'>" + f + "</span></span>";
-        q = jQuery("<div class='text_holder'>").append(v).append(q).get(0);
+        o = a;
+        var r = SiteState.getSessionUser();
+        var A = a.display_name || a.nick_name;
+        var B = (r && r.default_lang) || "en";
+        var f = Qualifiers._(a.gender, B, "replurks");
+        var d = "<span><a class='name' href='/" + a.nick_name + "' data-uid='" + a.id + "'>" + A + "</a><span class='qualifier q_replurks'>" + f + "</span></span>";
+        p = jQuery("<div class='text_holder'>").append(v).append(p).get(0);
         v = jQuery("<span>").append(d).get(0)
       }
       var b;
-      //{{ //startof fb_mode hack: m為此function的第二個參數m, b為前一行的var b, j為前面用到 j.lang 中的 j,  p為前面 var p = a; 中的 p
+      //{{ //startof fb_mode hack: m為此function的第二個參數m, b為前一行的var b, j為前面用到 j.lang 中的 j,  o為前面 if block 內的 o = a; 中的 o
       if (!m) {
-        b = (fb_mode? FB.getUser(j.fb_uid, fillUImgSrc(j.id)).pic_square : Users.getUserImgSrc(p));
+        b = (fb_mode? FB.getUser(j.fb_uid, fillUImgSrc(j.id)).pic_square : Users.getUserImgSrc(o));
       }
       ////}}
-      var x = "";
+      var y = "";
       if (c.nick_name == "plurkbuddy" && SiteState.canEdit()) {
-        x += "glow"
+        y += "glow"
       }
       if (j.is_unread == 2) {
-        x += " muted"
+        y += " muted"
       }
       if (SiteState.canEdit() && (Poll.current_data.unread_plurks[j.id])) {
-        x += " new"
+        y += " new"
       }
-      if (m && (getPD($dp.current_div).obj.owner_id == j.user_id)) {
-        x += " highlight_owner"
+      if (m && !w && (getPD($dp.current_div).obj.owner_id == j.user_id)) {
+        y += " highlight_owner"
       }
       if (tl_banana.enable && j.is_ad) {
-        x += " banana_plurk display";
+        y += " banana_plurk display";
         if (jQuery.inArray(j.plurk_id.toString(), tl_banana.plurk[j.realId].impress) > -1) {
-          x += " impress"
+          y += " impress"
         }
-        j.response_count = "贊助"
+        j.response_count = "韐箫阔"
       }
-      var r = {
+      var q = {
         plurk_id: j.plurk_id,
         rid: (j.id != j.plurk_id) ? j.id : "",
         user_id: j.user_id,
+        owner_id: j.owner_id,
         span_qual: outerHTML(v),
-        div_cnt: outerHTML(q),
+        div_cnt: outerHTML(p),
         img_src: b,
-        div_cls: x,
+        div_cls: y,
         response_count: j.response_count,
         mini: m,
         type: (m) ? "response" : "plurk"
       };
-      var h = jQuery(g(r));
+      var h = jQuery(g(q));
       if (m) {
         h.find(".td_img").empty()
       }
       if (tl_banana.enable && j.is_ad) {
-        h.click(function (B) {
+        h.click(function (C) {
           tl_banana.clickAds(this);
           return false
         })
       }
-      var o = h.get(0);
-      o.id = u;
+      var n = h.get(0);
+      n.id = u;
       var l = $plurks[u] = {
         obj: j,
-        div: o,
+        div: n,
         $div: h,
         image: h.find(".p_img").get(0),
         div_cnt: h.find(".text_holder").get(0),
@@ -2247,20 +2242,22 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         tr: h.find("tr").get(0)
       };
       if (!m) {
-        Plurks._renderIcons(l, p);
+        Plurks._renderIcons(l, o);
         var e = h.find(".td_response_count");
-        getPD(o).td_resp_count = e.get(0);
-        getPD(o).response_count = e.find(".response_count").get(0);
+        getPD(n).td_resp_count = e.get(0);
+        getPD(n).response_count = e.find(".response_count").get(0);
         if (j.response_count == 0) {
           e.find(".response_count").hide()
         }
       }
-      Plurks.applyNameColor(o, j);
+      if (!w || w == "鉦揸鉦 ") {
+        Plurks.applyNameColor(n, j)
+      }
       if (window.Media) {
-        Media.attach(o)
+        Media.attach(n)
       }
       if (window.annoplurk) {
-        annoplurk.attach(o)
+        annoplurk.attach(n)
       }
       //{{ //startof fb_mode hack: c為一開始var c = SiteState.getPlurkUser(...);中的c 
       if(fb_mode){
@@ -2268,7 +2265,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
         c.name_color = tmp_nc;
       }
       ////}} end of fb_mode hack
-      return o
+      return n
     };
     TimeLine.getFacebookNotifications = function(){
       var query = FB.Data.query('SELECT notification_id, title_html, title_text, app_id, href FROM notification WHERE recipient_id={0} AND is_unread = 1', FB.getAuthResponse().userID);
@@ -2390,9 +2387,7 @@ if(window.FRIENDS != null && SiteState.canEdit()){
       }
       Poll.updateCounters();
     };
-    //Remove http://go.plurk.com redirection
-    eval("Media._hideLink = " + Media._hideLink.toString().replace("window.open(b","window.open(c.href"));
-    document.body.removeChild(AJS.$("form_holder")); //要重載form_holder
+    AJS.$("form_holder").parentNode.removeChild(AJS.$("form_holder")); //要重載form_holder
     Plurks.init();
     (function(){
       var form_holder = AJS.$("form_holder");
@@ -2806,8 +2801,7 @@ function getFBfipListLimit(){
     var tmp=[];
     var showProfile = function(){
       try {TopBar;} catch (e) {TopBar = null;}
-      if(TopBar)
-        TopBar.showProfile();   
+      //if(TopBar) TopBar.showProfile();   
     };
     for(i=0; i < all_list.length; i++){
       tmp.push(all_list[i].flid);
